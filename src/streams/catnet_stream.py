@@ -15,6 +15,17 @@ from src.config import WEIGHTS_DIR, get_logger
 logger = get_logger(__name__)
 
 
+class AttrDict(dict):
+    def __getattr__(self, name: str):
+        try:
+            return self[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
+
+    def __setattr__(self, name: str, value) -> None:
+        self[name] = value
+
+
 def _load_catnet_config():
     config_path = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", "catnet", "config", "CAT_full.yaml")
@@ -23,7 +34,7 @@ def _load_catnet_config():
         data = yaml.safe_load(handle) or {}
 
     model_cfg = data.get("MODEL", {})
-    extra = model_cfg.get("EXTRA", {})
+    extra = AttrDict(model_cfg.get("EXTRA", {}))
     for stage_key in ("STAGE1", "STAGE2", "STAGE3", "STAGE4", "DC_STAGE3", "DC_STAGE4", "STAGE5"):
         stage = extra.get(stage_key)
         if isinstance(stage, dict) and "NUM_RANCHES" in stage:
