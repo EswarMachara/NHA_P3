@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from pdf2image import convert_from_path
 
-from config import PDF_DPI, IMAGE_MAX_DIM, get_logger
+from src.config import PDF_DPI, IMAGE_MAX_DIM, get_logger
 
 
 logger = get_logger(__name__)

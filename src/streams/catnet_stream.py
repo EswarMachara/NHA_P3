@@ -11,13 +11,13 @@ from src.config import WEIGHTS_DIR, get_logger
 logger = get_logger(__name__)
 
 
-def load_mvss_model(device: str):
+def load_catnet_model(device: str = "cpu"):
     """
-    Load MVSS-Net model from local weights file.
+    Load CAT-Net model from local weights file.
     """
-    weights_path = os.path.join(WEIGHTS_DIR, "mvssnet.pth")
+    weights_path = os.path.join(WEIGHTS_DIR, "catnet.pth")
     if not os.path.exists(weights_path):
-        logger.warning("MVSS-Net weights not found: %s", weights_path)
+        logger.warning("CAT-Net weights not found: %s", weights_path)
         raise FileNotFoundError(weights_path)
 
     try:
@@ -26,14 +26,14 @@ def load_mvss_model(device: str):
         try:
             model = torch.load(weights_path, map_location=device)
         except Exception as exc:
-            logger.warning("Failed to load MVSS-Net weights from %s: %s", weights_path, exc)
+            logger.warning("Failed to load CAT-Net weights from %s: %s", weights_path, exc)
             raise
         if isinstance(model, dict):
             if "model" in model:
                 model = model["model"]
             elif "state_dict" in model:
-                logger.warning("MVSS-Net checkpoint contains state_dict only: %s", weights_path)
-                raise ValueError("MVSS-Net weights require a serialized model")
+                logger.warning("CAT-Net checkpoint contains state_dict only: %s", weights_path)
+                raise ValueError("CAT-Net weights require a serialized model")
 
     if hasattr(model, "to"):
         model = model.to(device)
@@ -43,17 +43,19 @@ def load_mvss_model(device: str):
     return model
 
 
-def run_mvss(model, image_rgb: np.ndarray, device: str) -> tuple[np.ndarray, dict]:
+def run_catnet(model, image_rgb: np.ndarray, is_jpeg: bool, device: str = "cpu") -> np.ndarray:
     """
-    Run MVSS-Net inference and return an anomaly heatmap.
+    Run CAT-Net inference and return a heatmap.
     """
     try:
         if image_rgb is None:
             raise ValueError("image_rgb is None")
 
         height, width = image_rgb.shape[:2]
-        image_uint8 = image_rgb.astype(np.uint8, copy=False)
+        if not is_jpeg:
+            return np.zeros((height, width), dtype=np.float32)
 
+        image_uint8 = image_rgb.astype(np.uint8, copy=False)
         tensor = transforms.ToTensor()(image_uint8)
         input_tensor = tensor.unsqueeze(0).to(device)
 
@@ -66,7 +68,7 @@ def run_mvss(model, image_rgb: np.ndarray, device: str) -> tuple[np.ndarray, dic
             output = next(iter(output.values()))
 
         if not torch.is_tensor(output):
-            raise ValueError("MVSS-Net output is not a tensor")
+            raise ValueError("CAT-Net output is not a tensor")
 
         output_tensor = output.squeeze()
         output_np = output_tensor.detach().float().cpu().numpy()
@@ -78,12 +80,12 @@ def run_mvss(model, image_rgb: np.ndarray, device: str) -> tuple[np.ndarray, dic
         heatmap = output_np.astype(np.float32)
         heatmap = heatmap / (heatmap.max() + 1e-8)
 
-        logger.debug("MVSS heatmap min/max: %.6f/%.6f", float(heatmap.min()), float(heatmap.max()))
-        return heatmap, {}
+        logger.debug("CAT-Net heatmap min/max: %.6f/%.6f", float(heatmap.min()), float(heatmap.max()))
+        return heatmap
     except Exception as exc:
-        logger.warning("Failed to run MVSS-Net: %s", exc)
+        logger.warning("Failed to run CAT-Net: %s", exc)
         try:
             height, width = image_rgb.shape[:2]
         except Exception:
             height, width = 0, 0
-        return np.zeros((height, width), dtype=np.float32), {}
+        return np.zeros((height, width), dtype=np.float32)

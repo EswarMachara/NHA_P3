@@ -1,13 +1,17 @@
 import argparse
 import logging
 import os
+import sys
 
-from category_assignment import assign_categories
-from config import THRESHOLD, get_logger
-from output_generator import write_json, write_yaml
-from preprocessor import preprocess_file
-from streams.catnet_stream import load_catnet_model, run_catnet
-from streams.statistical_stream import (
+print("Working dir:", os.getcwd())
+print("Python path:", sys.path[:3])
+
+from src.category_assignment import assign_categories
+from src.config import THRESHOLD, get_logger
+from src.output_generator import write_json, write_yaml
+from src.preprocessor import preprocess_file
+from src.streams.catnet_stream import load_catnet_model, run_catnet
+from src.streams.statistical_stream import (
     compute_c8_authenticity_score,
     compute_ela,
     compute_inter_band_features,
@@ -15,7 +19,7 @@ from streams.statistical_stream import (
     detect_irregular_spacing,
     detect_overwriting,
 )
-from streams.mvss_stream import load_mvss_model, run_mvss
+from src.streams.mvss_stream import load_mvss_model, run_mvss
 
 
 def main() -> None:

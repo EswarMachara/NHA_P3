@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 import pytesseract
 
-from bbox_extractor import extract_bboxes
-from config import (
+from src.bbox_extractor import extract_bboxes
+from src.config import (
     BBOX_MIN_AREA,
     PHASH_DISTANCE_THRESHOLD,
     PHASH_PATCH_SIZE,

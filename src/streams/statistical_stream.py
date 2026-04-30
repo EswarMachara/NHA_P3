@@ -8,7 +8,7 @@ from scipy.fft import dctn
 from scipy.stats import kurtosis
 from skimage.measure import shannon_entropy
 
-from config import (
+from src.config import (
     C7_IQR_MULTIPLIER,
     C7_MIN_STRETCH_FACTOR,
     C8_ENTROPY_BG_THRESHOLD,

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from config import (
+from src.config import (
     BBOX_MIN_AREA,
     BBOX_MORPH_CLOSE_KERNEL,
     BBOX_MORPH_OPEN_KERNEL,
