@@ -1,0 +1,8 @@
+numpy
+opencv-python
+Pillow
+pdf2image
+pytesseract
+scipy
+scikit-image
+PyYAML
