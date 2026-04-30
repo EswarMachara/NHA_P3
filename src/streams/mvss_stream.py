@@ -24,7 +24,7 @@ def load_mvss_model(device: str):
         model = torch.jit.load(weights_path, map_location=device)
     except Exception:
         try:
-            model = torch.load(weights_path, map_location=device)
+            model = torch.load(weights_path, map_location=device, weights_only=False)
         except Exception as exc:
             logger.warning("Failed to load MVSS-Net weights from %s: %s", weights_path, exc)
             raise
