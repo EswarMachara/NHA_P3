@@ -3,6 +3,7 @@ import os
 import cv2
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from src.config import WEIGHTS_DIR, get_logger
 from src.mvss.mvssnet import get_mvss
@@ -79,6 +80,16 @@ def _prepare_mvss_input(image_rgb: np.ndarray) -> torch.Tensor:
     return tensor.unsqueeze(0)
 
 
+def _pad_to_multiple(tensor: torch.Tensor, multiple: int = 32) -> tuple[torch.Tensor, tuple[int, int]]:
+    height, width = tensor.shape[-2:]
+    pad_h = (multiple - height % multiple) % multiple
+    pad_w = (multiple - width % multiple) % multiple
+    if pad_h == 0 and pad_w == 0:
+        return tensor, (0, 0)
+    padded = F.pad(tensor, (0, pad_w, 0, pad_h), mode="replicate")
+    return padded, (pad_h, pad_w)
+
+
 def run_mvss(model, image_rgb: np.ndarray, device: str) -> tuple[np.ndarray, dict]:
     """
     Run MVSS-Net inference and return an anomaly heatmap.
@@ -89,6 +100,7 @@ def run_mvss(model, image_rgb: np.ndarray, device: str) -> tuple[np.ndarray, dic
 
         height, width = image_rgb.shape[:2]
         input_tensor = _prepare_mvss_input(image_rgb).to(device)
+        input_tensor, (pad_h, pad_w) = _pad_to_multiple(input_tensor)
 
         with torch.no_grad():
             edge_map, seg_map = model(input_tensor)
@@ -105,6 +117,8 @@ def run_mvss(model, image_rgb: np.ndarray, device: str) -> tuple[np.ndarray, dic
         output_np = output_tensor.detach().float().cpu().numpy()
         if output_np.ndim == 3:
             output_np = output_np[0]
+        if pad_h or pad_w:
+            output_np = output_np[:height, :width]
         if output_np.shape != (height, width):
             output_np = cv2.resize(output_np, (width, height), interpolation=cv2.INTER_LINEAR)
 
