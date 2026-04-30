@@ -3,6 +3,8 @@ import logging
 import os
 import sys
 
+import torch
+
 print("Working dir:", os.getcwd())
 print("Python path:", sys.path[:3])
 
@@ -37,6 +39,12 @@ def main() -> None:
     else:
         logging.getLogger().setLevel(logging.INFO)
         logger.setLevel(logging.INFO)
+
+    if args.device.startswith("cuda") and not torch.cuda.is_available():
+        logger.warning("CUDA requested but not available; falling back to CPU.")
+        args.device = "cpu"
+    elif args.device.startswith("cuda"):
+        logger.info("Using CUDA device: %s", torch.cuda.get_device_name(0))
 
     input_dir = args.input_dir
     output_dir = args.output_dir
