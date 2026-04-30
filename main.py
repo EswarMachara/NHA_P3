@@ -15,7 +15,7 @@ from streams.statistical_stream import (
     detect_irregular_spacing,
     detect_overwriting,
 )
-from streams.trufor_stream import load_trufor_model, run_trufor
+from streams.mvss_stream import load_mvss_model, run_mvss
 
 
 def main() -> None:
@@ -39,7 +39,7 @@ def main() -> None:
     os.makedirs(output_dir, exist_ok=True)
 
     try:
-        trufor_model = load_trufor_model(device=args.device)
+        mvss_model = load_mvss_model(device=args.device)
         catnet_model = load_catnet_model(device=args.device)
     except Exception as exc:
         logger.warning("Failed to load models: %s", exc)
@@ -78,7 +78,7 @@ def main() -> None:
                 c9_map = detect_field_noise_outliers(page["image_rgb"], page["image_gray"])
                 c5_info = compute_inter_band_features(page["image_gray"])
 
-                trufor_map, _ = run_trufor(trufor_model, page["image_rgb"], device=args.device)
+                trufor_map, _ = run_mvss(mvss_model, page["image_rgb"], device=args.device)
                 catnet_map = run_catnet(catnet_model, page["image_rgb"], page["is_jpeg"], device=args.device)
 
                 heatmaps = {
