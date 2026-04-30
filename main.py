@@ -83,7 +83,13 @@ def main() -> None:
                 c5_info = compute_inter_band_features(page["image_gray"])
 
                 trufor_map, _ = run_mvss(mvss_model, page["image_rgb"], device=args.device)
-                catnet_map = run_catnet(catnet_model, page["image_rgb"], page["is_jpeg"], device=args.device)
+                catnet_map = run_catnet(
+                    catnet_model,
+                    page["image_rgb"],
+                    page["is_jpeg"],
+                    file_path=page.get("file_path"),
+                    device=args.device,
+                )
 
                 heatmaps = {
                     "ela": ela_map,

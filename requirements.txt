@@ -6,3 +6,6 @@ pytesseract
 scipy
 scikit-image
 PyYAML
+jpegio
+torch
+torchvision
